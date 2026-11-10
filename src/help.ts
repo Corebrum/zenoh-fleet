@@ -3,14 +3,14 @@
 export const ROUTING_HELP = `
 Routing
   Hub (router)
-    One zenohd on this machine. Listens on TCP 7447 (and WebSocket 10000 if
-    AgenticROS is enabled). Other machines connect here. Default when no fleet
-    exists yet. v1 writes zenohd.json5.
+    On Corebrum OS this machine's corebrum-zenoh-router.service (rmw_zenohd on
+    TCP 7447) is the hub. The generator does not write a second zenohd config.
+    Other machines connect here. Default when no fleet exists yet.
 
   Member (client)
-    A robot, Corebrum worker, or AgenticROS laptop. Does not run a second
-    router. Connects to the hub (zenoh-bridge-ros2dds, rmw_zenoh session, or
-    corebrum --zenoh-router). v1 writes client/bridge files.
+    A robot or another Corebrum machine. Does not run a router. Writes an
+    rmw_zenoh client session and the cortex daemon --zenoh-router line.
+    WebSocket port 10000 is only for --agenticros. The DDS bridge is --bridge.
 
   Peer mesh
     Every node is a router and lists the others in connect.endpoints. No single

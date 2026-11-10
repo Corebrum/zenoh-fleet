@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Link this package's CLI into node_modules/.bin so `npx @agenticros/zenoh-fleet`
+ * Link this package's CLI into node_modules/.bin so `npx @corebrum/zenoh-fleet`
  * works from the source checkout. Skip when installed as a dependency (npm already
  * creates the bin).
  */

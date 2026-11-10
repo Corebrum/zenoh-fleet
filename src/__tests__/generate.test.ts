@@ -28,30 +28,36 @@ function hubPublic(): GenerateInput {
 }
 
 describe("generateFiles", () => {
-  it("hub public writes zenohd router + remote-api, not a bridge", () => {
+  it("hub public on Corebrum OS does not write a second zenohd", () => {
     const files = generateFiles(hubPublic());
-    assert.ok(files["zenohd.json5"]);
+    assert.equal(files["zenohd.json5"], undefined);
     assert.ok(files["fleet.json"]);
     assert.ok(files["README.md"]);
     assert.equal(files["zenoh-bridge-ros2dds-robot.json5"], undefined);
-    const z = files["zenohd.json5"];
-    assert.match(z, /mode: "router"/);
-    assert.match(z, /tcp\/0\.0\.0\.0:7447/);
-    assert.match(z, /enabled: true/);
-    assert.match(z, /websocket_port: "10000"/);
-    assert.doesNotMatch(z, /"allow"/);
     const fleet = JSON.parse(files["fleet.json"]);
     assert.equal(fleet.name, "warehouse-01");
     assert.deepEqual(fleet.hubEndpoints, ["tcp/192.168.0.241:7447"]);
-    assert.match(files["README.md"], /zenohd -c zenohd\.json5/);
-    assert.match(files["README.md"], /From \*\*this directory\*\*/);
+    assert.match(files["README.md"], /corebrum-zenoh-router\.service/);
+    assert.doesNotMatch(files["README.md"], /zenohd -c zenohd\.json5/);
+    const fleetRole = JSON.parse(files["fleet.json"]);
+    assert.equal(fleetRole.role, "hub");
+    assert.equal(fleetRole.corebrumOs, true);
   });
 
-  it("hub private disables multicast", () => {
+  it("hub private disables multicast when zenohd is the router", () => {
     const input = hubPublic();
+    input.integrations.corebrum = false;
     input.identity.isolation = "private";
     const z = generateFiles(input)["zenohd.json5"];
     assert.match(z, /enabled: false/);
+  });
+
+  it("non-OS hub still writes zenohd and the remote-api plugin", () => {
+    const input = hubPublic();
+    input.integrations.corebrum = false;
+    const z = generateFiles(input)["zenohd.json5"];
+    assert.match(z, /mode: "router"/);
+    assert.match(z, /websocket_port: "10000"/);
   });
 
   it("member public writes bridge client with optional empty connect", () => {
@@ -85,7 +91,7 @@ describe("generateFiles", () => {
     assert.ok(files["rmw-zenoh-session.json5"]);
     assert.match(files["rmw-zenoh-session.json5"], /mode: "client"/);
     assert.match(files["README.md"], /Multicast scouting is off/);
-    assert.match(files["README.md"], /corebrum daemon --zenoh-router tcp:\/\/192\.168\.0\.241:7447/);
+    assert.match(files["README.md"], /cortex daemon --zenoh-router tcp:\/\/192\.168\.0\.241:7447/);
     assert.match(files["README.md"], /ws:\/\/192\.168\.0\.241:10000/);
   });
 

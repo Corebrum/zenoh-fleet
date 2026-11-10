@@ -34,10 +34,12 @@ describe("wizard plan", () => {
     assert.deepEqual(plan.input.identity.hubEndpoints, ["tcp/10.0.0.5:7447"]);
     assert.equal(plan.input.identity.wsEndpoint, "ws://10.0.0.5:10000");
     assert.equal(plan.input.listenEndpoint, "tcp/0.0.0.0:7447");
-    assert.equal(plan.input.integrations.agenticros, true);
-    assert.equal(plan.input.integrations.rmwZenoh, false);
+    assert.equal(plan.input.integrations.agenticros, false);
+    assert.equal(plan.input.integrations.rmwZenoh, true);
+    assert.equal(plan.input.integrations.ros2ddsBridge, false);
     const files = generateFiles(plan.input);
-    assert.ok(files["zenohd.json5"]);
+    assert.equal(files["zenohd.json5"], undefined);
+    assert.match(files["README.md"], /corebrum-zenoh-router\.service/);
   });
 
   it("existing fleet.json defaults role to member and joins hub endpoints", async () => {
@@ -60,7 +62,9 @@ describe("wizard plan", () => {
     assert.deepEqual(plan.input.identity.hubEndpoints, ["tcp/192.168.0.241:7447"]);
     const files = generateFiles(plan.input);
     assert.equal(files["zenohd.json5"], undefined);
-    assert.match(files["zenoh-bridge-ros2dds-robot.json5"], /tcp\/192\.168\.0\.241:7447/);
+    assert.equal(files["zenoh-bridge-ros2dds-robot.json5"], undefined);
+    assert.match(files["rmw-zenoh-session.json5"], /tcp\/192\.168\.0\.241:7447/);
+    assert.match(files["README.md"], /cortex daemon --zenoh-router tcp:\/\/192\.168\.0\.241:7447/);
   });
 
   it("joins from a fleet.json path via --join", async () => {

@@ -7,12 +7,15 @@ import { renderDeployReadme } from "./printDeploy.js";
 
 export function generateFiles(input: GenerateInput): Record<string, string> {
   const files: Record<string, string> = {
-    "fleet.json": renderFleetJson(input.identity),
+    "fleet.json": renderFleetJson(input),
     "README.md": renderDeployReadme(input),
   };
 
   if (input.role === "hub") {
-    files["zenohd.json5"] = renderZenohd(input);
+    // Corebrum OS already runs rmw_zenohd. A second zenohd would take port 7447.
+    if (!input.integrations.corebrum) {
+      files["zenohd.json5"] = renderZenohd(input);
+    }
     return files;
   }
 

@@ -14,7 +14,8 @@ test("routing copy names hub, member, peer, public LAN, and private mesh", () =>
   assert.match(ROUTING_HELP, /Hub \(router\)/);
   assert.match(ROUTING_HELP, /Member \(client\)/);
   assert.match(ROUTING_HELP, /Peer mesh/);
-  assert.match(ROUTING_HELP, /Not generated in v1/);
+  assert.match(ROUTING_HELP, /rmw_zenohd/);
+  assert.match(ROUTING_HELP, /cortex daemon/);
   assert.match(ROUTING_HELP, /Public LAN/);
   assert.match(ROUTING_HELP, /Private mesh/);
   assert.match(PEER_ROLE_ERROR, /peer mesh is not generated yet/i);

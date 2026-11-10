@@ -169,7 +169,7 @@ export async function resolveInitPlan(
       message: "This machine",
       default: role,
       choices: [
-        { name: "Hub (router) — run zenohd here", value: "hub" as const },
+        { name: "Hub (router) — this Corebrum OS machine keeps rmw_zenohd", value: "hub" as const },
         {
           name: "Member (client) — robot, Corebrum, or AgenticROS laptop",
           value: "member" as const,

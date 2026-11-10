@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
@@ -21,11 +21,11 @@ describe("runInit --yes", () => {
       { token: undefined },
     );
     assert.equal(plan.input.role, "hub");
-    const zenohd = readFileSync(join(out, "zenohd.json5"), "utf8");
-    assert.match(zenohd, /mode: "router"/);
     const fleet = JSON.parse(readFileSync(join(out, "fleet.json"), "utf8"));
     assert.deepEqual(fleet.hubEndpoints, ["tcp/192.168.10.4:7447"]);
-    assert.match(readFileSync(join(out, "README.md"), "utf8"), /zenohd -c zenohd\.json5/);
+    assert.equal(existsSync(join(out, "zenohd.json5")), false);
+    assert.equal(fleet.role, "hub");
+    assert.match(readFileSync(join(out, "README.md"), "utf8"), /corebrum-zenoh-router\.service/);
   });
 
   it("stdout next-step uses the output directory path", async () => {
@@ -53,6 +53,7 @@ describe("runInit --yes", () => {
       },
       "./local-fleet",
     );
-    assert.match(text, /zenohd -c \/.*\/local-fleet\/zenohd\.json5/);
+    assert.match(text, /corebrum zenoh fleet apply \/.*\/local-fleet/);
+    assert.match(text, /corebrum-fleet-dir: \/.*\/local-fleet/);
   });
 });

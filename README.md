@@ -3,8 +3,8 @@
 Enter-to-accept CLI that writes **compatible Zenoh JSON5** for every machine on a robot fleet. Each box runs the same command, picks **hub** or **member**, and gets the files it should actually start — not a copy-and-tweak of Eclipse `DEFAULT_CONFIG.json5`.
 
 ```bash
-npx zenoh-fleet                      # wizard (same CLI as @agenticros/zenoh-fleet)
-npx @agenticros/zenoh-fleet          # scoped name; also works
+npx zenoh-fleet                      # wizard (same CLI as @corebrum/zenoh-fleet)
+npx @corebrum/zenoh-fleet            # scoped name; also works
 zenoh-fleet --help                   # routing + commands
 zenoh-fleet --version
 zenoh-fleet init --role member --yes
@@ -36,8 +36,8 @@ Private mesh
 Name the fleet (or keep `local-fleet`) and press Enter through the rest:
 
 - Isolation: public LAN
-- Ports: `7447` / `10000`
-- Integrations: AgenticROS + Corebrum + ROS 2 DDS bridge (rmw_zenoh off)
+- Ports: `7447` / `10000` (10000 only when AgenticROS / Synapse Mode D is selected)
+- Integrations: Corebrum OS + rmw_zenoh client session. DDS bridge and WebSocket are off until asked
 - Advertised IP: first non-loopback IPv4
 - Role: hub if no fleet exists yet, otherwise member
 - ARC: yes only if `agenticros login` already stored an API token
@@ -68,9 +68,9 @@ ARC does not discover LAN addresses and cannot punch NAT. Cross-site private mes
 
 ## Deploy notes
 
-- Hub: `zenohd -c zenohd.json5`. Install `zenoh-plugin-remote-api` for AgenticROS.
-- AgenticROS: `zenoh.routerEndpoint` = `ws://<hub>:10000` (never `tcp/...`).
-- Corebrum: `corebrum daemon --zenoh-router tcp://<hub>:7447`.
+- Hub on Corebrum OS: `sudo corebrum zenoh fleet apply .` keeps `rmw_zenohd`. Do not start a second `zenohd`.
+- AgenticROS, only with `--agenticros`: `zenoh.routerEndpoint` = `ws://<hub>:10000` (never `tcp/...`).
+- Cortex: `cortex daemon --zenoh-router tcp://<hub>:7447`.
 - Robot: `zenoh-bridge-ros2dds -c zenoh-bridge-ros2dds-robot.json5`, then `nc -zv <hub> 7447`.
 
 ## License

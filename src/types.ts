@@ -43,8 +43,8 @@ export const DEFAULT_TCP_PORT = 7447;
 export const DEFAULT_WS_PORT = 10000;
 
 export const DEFAULT_INTEGRATIONS: Integrations = {
-  agenticros: true,
+  agenticros: false,
   corebrum: true,
-  ros2ddsBridge: true,
-  rmwZenoh: false,
+  ros2ddsBridge: false,
+  rmwZenoh: true,
 };

@@ -1,6 +1,6 @@
 {
-  "name": "@agenticros/zenoh-fleet",
-    "version": "0.1.4",
+  "name": "@corebrum/zenoh-fleet",
+  "version": "0.1.6",
   "type": "module",
   "description": "Enter-to-accept wizard that writes compatible Zenoh JSON5 for a hub or member on a robot fleet.",
   "keywords": [
@@ -9,7 +9,7 @@
     "ros2",
     "robotics",
     "fleet",
-    "agenticros",
+    "corebrum",
     "cli"
   ],
   "main": "./dist/index.js",
@@ -46,9 +46,9 @@
   },
   "author": "Chris Matthieu",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/agenticros/zenoh-fleet",
+  "homepage": "https://github.com/Corebrum/zenoh-fleet",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/agenticros/zenoh-fleet.git"
+    "url": "git+https://github.com/Corebrum/zenoh-fleet.git"
   }
 }
