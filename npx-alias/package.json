@@ -1,6 +1,6 @@
 {
   "name": "zenoh-fleet",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "type": "module",
   "description": "npx zenoh-fleet — same CLI as @corebrum/zenoh-fleet",
   "bin": {
@@ -17,7 +17,7 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "@corebrum/zenoh-fleet": "0.1.6"
+    "@corebrum/zenoh-fleet": "0.1.7"
   },
   "author": "Chris Matthieu",
   "license": "Apache-2.0",
