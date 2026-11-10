@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { pullZenohFleet, publishZenohFleet } from "../cloud.js";
+import {
+  formatCloudPullFailure,
+  pullZenohFleet,
+  pullZenohFleetFromCloud,
+  publishZenohFleet,
+} from "../cloud.js";
 
 describe("Corebrum Cloud client", () => {
   it("GET returns null on 404/401 without throwing", async () => {
@@ -60,5 +65,17 @@ describe("Corebrum Cloud client", () => {
       formatCloudPublishFailure(404, "Cannot PUT /orgs/current/zenoh-fleet"),
       /does not expose PUT/,
     );
+  });
+
+  it("GET 404 yields a member-friendly pull message", () => {
+    assert.match(formatCloudPullFailure(404, ""), /no Zenoh fleet/);
+  });
+
+  it("pullZenohFleetFromCloud surfaces HTTP errors", async () => {
+    const fetch404: typeof fetch = async () =>
+      new Response("missing", { status: 404 });
+    const result = await pullZenohFleetFromCloud("tok", fetch404);
+    assert.equal(result.ok, false);
+    assert.equal(result.status, 404);
   });
 });

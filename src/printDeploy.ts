@@ -21,7 +21,7 @@ export function renderNextSteps(input: GenerateInput, outDir: string): string {
   const lines = ["Next (absolute path; works from any directory):", ""];
   if (input.role === "hub" && input.integrations.corebrum) {
     lines.push("```bash");
-    lines.push(`sudo corebrum zenoh fleet apply ${configPath(outDir, "").replace(/\/$/, "")}`);
+    lines.push(`sudo corebrum zenoh fleet sync ${configPath(outDir, "").replace(/\/$/, "")}`);
     lines.push("```");
   } else if (input.role === "hub") {
     lines.push("```bash");
@@ -66,7 +66,7 @@ export function renderDeployReadme(input: GenerateInput): string {
       );
       lines.push("");
       lines.push("```bash");
-      lines.push("sudo corebrum zenoh fleet apply .");
+      lines.push("sudo corebrum zenoh fleet sync .");
       lines.push("cortex daemon --zenoh-router tcp://127.0.0.1:7447");
       lines.push("```");
       lines.push("");
@@ -184,7 +184,7 @@ export function renderDeployReadme(input: GenerateInput): string {
   lines.push("```");
   lines.push("");
   lines.push(
-    "If the hub published to Corebrum Cloud: log in (`synapse login`) on the other machine, then run `npx zenoh-fleet` and accept the defaults.",
+    "If the hub published to Corebrum Cloud: `synapse login` on the member, then `zenoh-fleet pull` and `sudo corebrum zenoh fleet sync ~/local-fleet` (or `sudo corebrum zenoh fleet join`).",
   );
   lines.push("");
 

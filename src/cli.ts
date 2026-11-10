@@ -4,6 +4,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { INIT_ROLE_HELP, ROUTING_HELP } from "./help.js";
+import { runPublish } from "./publish.js";
+import { runPull } from "./pull.js";
 import { runInit, type InitFlags } from "./wizard.js";
 
 export function readVersion(): string {
@@ -91,6 +93,39 @@ export function createProgram(): Command {
     .addHelpText("after", `\n${ROUTING_HELP}\n`)
     .action(async (opts: Record<string, unknown>) => {
       await runInit(initFlagsFromOpts(opts, process.argv));
+    });
+
+  program
+    .command("pull")
+    .description(
+      "Pull org Zenoh fleet from Corebrum Cloud and write member configs (needs synapse login).",
+    )
+    .option("--out <dir>", `Output directory (default ~/${"local-fleet"})`)
+    .option("--synapse", "Include Corebrum Synapse WebSocket deploy notes")
+    .option("--no-corebrum", "Skip Corebrum OS rmw_zenoh session file")
+    .option("--bridge", "Write zenoh-bridge-ros2dds for a member")
+    .option("--no-rmw-zenoh", "Skip the rmw_zenoh session file")
+    .action(async (opts: Record<string, unknown>) => {
+      const argv = process.argv;
+      await runPull(
+        {
+          out: opts.out as string | undefined,
+          synapse: synapseTriFlag(argv),
+          corebrum: triFlag(argv, "--corebrum", "--no-corebrum"),
+          bridge: triFlag(argv, "--bridge", "--no-bridge"),
+          rmwZenoh: triFlag(argv, "--rmw-zenoh", "--no-rmw-zenoh"),
+        },
+      );
+    });
+
+  program
+    .command("publish")
+    .description(
+      "Publish local hub fleet.json endpoints to Corebrum Cloud for this organization.",
+    )
+    .argument("[fleet.json]", "Path to fleet.json (default ./local-fleet/fleet.json)")
+    .action(async (fleetJson: string | undefined) => {
+      await runPublish(fleetJson);
     });
 
   return program;

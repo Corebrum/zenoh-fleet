@@ -62,13 +62,27 @@ Member output (by integration): `fleet.json`, `zenoh-bridge-ros2dds-robot.json5`
 
 ## Corebrum Cloud
 
-Optional. If you are logged in (`synapse login`), the hub can **PUT** its advertised `tcp/<lan-ip>:7447` and `ws://<lan-ip>:10000` to `https://cloud.corebrum.com/orgs/current/zenoh-fleet`. Members **GET** that record so they can Enter-through without copying IPs.
+Optional. If you are logged in (`synapse login`), the hub publishes LAN endpoints to your organization on Corebrum Cloud. Members pull that record and generate configs without typing hub IPs.
+
+```bash
+# Hub (after init --role hub)
+zenoh-fleet publish
+
+# Member robot (same org, synapse login)
+zenoh-fleet pull
+sudo corebrum zenoh fleet sync ~/local-fleet
+
+# One step on Corebrum OS
+sudo corebrum zenoh fleet join
+```
+
+API: `GET` / `PUT` `https://cloud.corebrum.com/orgs/current/zenoh-fleet` — see [docs/corebrum-cloud-zenoh-fleet-api.md](docs/corebrum-cloud-zenoh-fleet-api.md).
 
 Corebrum Cloud does not discover LAN addresses and cannot punch NAT. Cross-site private meshes still need a VPN (Tailscale, etc.) or a public hub. Robots do not publish their own IPs in v1.
 
 ## Deploy notes
 
-- Hub on Corebrum OS: `sudo corebrum zenoh fleet apply .` keeps `rmw_zenohd`. Do not start a second `zenohd`.
+- Hub on Corebrum OS: `sudo corebrum zenoh fleet sync .` keeps `rmw_zenohd`. Do not start a second `zenohd`.
 - Corebrum Synapse, only with `--synapse`: `zenoh.routerEndpoint` = `ws://<hub>:10000` (never `tcp/...`).
 - Cortex: `cortex daemon --zenoh-router tcp://<hub>:7447`.
 - Robot: `zenoh-bridge-ros2dds -c zenoh-bridge-ros2dds-robot.json5`, then `nc -zv <hub> 7447`.

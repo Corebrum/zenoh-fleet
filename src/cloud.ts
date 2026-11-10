@@ -20,18 +20,60 @@ function headers(token: string): Record<string, string> {
   };
 }
 
+export interface CloudPullResult {
+  ok: boolean;
+  status: number;
+  detail: string;
+  record: CloudZenohFleet | null;
+}
+
+export function formatCloudPullFailure(status: number, body: string): string {
+  if (status === 404) {
+    return "Corebrum Cloud has no Zenoh fleet for this organization yet. On the hub run `zenoh-fleet publish` after `init --role hub`, or use `zenoh-fleet init --role member --hub-ip <lan-ip>`.";
+  }
+  if (status === 401) {
+    return "Corebrum Cloud rejected the API token. Run `synapse login` again.";
+  }
+  if (/Not in an organization/i.test(body)) {
+    return "This login is not in an organization. Create or join an org on https://cloud.corebrum.com, then retry.";
+  }
+  const snippet = body.replace(/\s+/g, " ").trim().slice(0, 200);
+  return `Corebrum Cloud pull failed (HTTP ${status})${snippet ? `: ${snippet}` : ""}.`;
+}
+
+export async function pullZenohFleetFromCloud(
+  token: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<CloudPullResult> {
+  const res = await fetchImpl(`${cloudBaseUrl()}/orgs/current/zenoh-fleet`, {
+    headers: headers(token),
+  });
+  const detail = await res.text();
+  if (!res.ok) {
+    return { ok: false, status: res.status, detail, record: null };
+  }
+  try {
+    const body = JSON.parse(detail) as CloudZenohFleet | null;
+    if (!body || typeof body !== "object" || !body.name) {
+      return {
+        ok: false,
+        status: res.status,
+        detail: "invalid zenoh-fleet record",
+        record: null,
+      };
+    }
+    return { ok: true, status: res.status, detail, record: body };
+  } catch {
+    return { ok: false, status: res.status, detail, record: null };
+  }
+}
+
 export async function pullZenohFleet(
   token: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<CloudZenohFleet | null> {
-  const res = await fetchImpl(`${cloudBaseUrl()}/orgs/current/zenoh-fleet`, {
-    headers: headers(token),
-  });
-  if (res.status === 404 || res.status === 401) return null;
-  if (!res.ok) return null;
-  const body = (await res.json()) as CloudZenohFleet | null;
-  if (!body || typeof body !== "object" || !body.name) return null;
-  return body;
+  const result = await pullZenohFleetFromCloud(token, fetchImpl);
+  return result.ok ? result.record : null;
 }
 
 export interface CloudPublishResult {

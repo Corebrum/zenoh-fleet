@@ -53,7 +53,7 @@ describe("runInit --yes", () => {
       },
       "./local-fleet",
     );
-    assert.match(text, /corebrum zenoh fleet apply \/.*\/local-fleet/);
+    assert.match(text, /corebrum zenoh fleet sync \/.*\/local-fleet/);
     assert.match(text, /corebrum-fleet-dir: \/.*\/local-fleet/);
   });
 });
