@@ -1,6 +1,6 @@
 {
   "name": "@corebrum/zenoh-fleet",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "type": "module",
   "description": "Enter-to-accept wizard that writes compatible Zenoh JSON5 for a hub or member on a robot fleet.",
   "keywords": [
