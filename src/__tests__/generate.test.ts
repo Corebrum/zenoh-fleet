@@ -11,7 +11,7 @@ function hubPublic(): GenerateInput {
     listenEndpoint: "tcp/0.0.0.0:7447",
     robotNamespace: "",
     integrations: {
-      agenticros: true,
+      synapse: true,
       corebrum: true,
       ros2ddsBridge: true,
       rmwZenoh: false,

@@ -15,7 +15,7 @@ import type { FleetIdentity } from "../types.js";
 
 const emptyCtx = (): WizardContext => ({
   localFleet: null,
-  arcFleet: null,
+  cloudFleet: null,
   lanIp: "10.0.0.5",
 });
 
@@ -34,7 +34,7 @@ describe("wizard plan", () => {
     assert.deepEqual(plan.input.identity.hubEndpoints, ["tcp/10.0.0.5:7447"]);
     assert.equal(plan.input.identity.wsEndpoint, "ws://10.0.0.5:10000");
     assert.equal(plan.input.listenEndpoint, "tcp/0.0.0.0:7447");
-    assert.equal(plan.input.integrations.agenticros, false);
+    assert.equal(plan.input.integrations.synapse, false);
     assert.equal(plan.input.integrations.rmwZenoh, true);
     assert.equal(plan.input.integrations.ros2ddsBridge, false);
     const files = generateFiles(plan.input);
@@ -53,7 +53,7 @@ describe("wizard plan", () => {
     };
     const plan = await resolveInitPlan(
       { yes: true },
-      { localFleet: identity, arcFleet: null, lanIp: "10.0.0.8" },
+      { localFleet: identity, cloudFleet: null, lanIp: "10.0.0.8" },
       false,
     );
     assert.equal(plan.input.role, "member");
@@ -85,19 +85,19 @@ describe("wizard plan", () => {
     const localFleet = loadFleetJson(path);
     const plan = await resolveInitPlan(
       { yes: true, join: path, role: "member" },
-      { localFleet, arcFleet: null, lanIp: null },
+      { localFleet, cloudFleet: null, lanIp: null },
       false,
     );
     assert.equal(plan.input.role, "member");
     assert.deepEqual(plan.input.identity.hubEndpoints, ["tcp/192.168.1.9:7447"]);
   });
 
-  it("ARC pull fills defaults so a member can enter-through", async () => {
+  it("Corebrum Cloud pull fills defaults so a member can enter-through", async () => {
     const plan = await resolveInitPlan(
       { yes: true },
       {
         localFleet: null,
-        arcFleet: {
+        cloudFleet: {
           name: "org-fleet",
           isolation: "private",
           tcpPort: 7447,
@@ -113,13 +113,13 @@ describe("wizard plan", () => {
     assert.equal(plan.input.role, "member");
     assert.equal(plan.input.identity.name, "org-fleet");
     assert.deepEqual(plan.input.identity.hubEndpoints, ["tcp/10.1.2.3:7447"]);
-    assert.equal(plan.useArc, true);
+    assert.equal(plan.useCloud, true);
   });
 
   it("does not advertise 127.0.0.1 as the hub connect address", async () => {
     const plan = await resolveInitPlan(
       { yes: true, role: "hub", hubIp: "127.0.0.1" },
-      { localFleet: null, arcFleet: null, lanIp: "127.0.0.1" },
+      { localFleet: null, cloudFleet: null, lanIp: "127.0.0.1" },
       false,
     );
     assert.equal(plan.input.advertisedIp, null);
@@ -127,12 +127,12 @@ describe("wizard plan", () => {
     assert.ok(plan.warnings.length > 0);
   });
 
-  it("skips ARC when --no-arc even if a token exists", async () => {
+  it("skips Corebrum Cloud when --no-cloud even if a token exists", async () => {
     const plan = await resolveInitPlan(
-      { yes: true, role: "hub", arc: false },
-      { localFleet: null, arcFleet: null, lanIp: "10.0.0.1", token: "tok" },
+      { yes: true, role: "hub", cloud: false },
+      { localFleet: null, cloudFleet: null, lanIp: "10.0.0.1", token: "tok" },
       false,
     );
-    assert.equal(plan.useArc, false);
+    assert.equal(plan.useCloud, false);
   });
 });

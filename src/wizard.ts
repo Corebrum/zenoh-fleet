@@ -2,12 +2,12 @@ import { checkbox, confirm, input as promptInput, select } from "@inquirer/promp
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { pullZenohFleet, publishZenohFleet } from "./arc.js";
+import { pullZenohFleet, publishZenohFleet } from "./cloud.js";
 import {
   detectLanIpv4,
   findLocalFleetPath,
-  getArcApiToken,
-  getArcRobotId,
+  getCloudApiToken,
+  getCloudRobotId,
   isLoopbackIp,
   loadFleetJson,
   zenohTcpEndpoint,
@@ -17,7 +17,7 @@ import { generateFiles } from "./generate.js";
 import { PEER_ROLE_ERROR } from "./help.js";
 import { printDeploy } from "./printDeploy.js";
 import type {
-  ArcZenohFleet,
+  CloudZenohFleet,
   FleetIdentity,
   GenerateInput,
   Integrations,
@@ -41,18 +41,18 @@ export interface InitFlags {
   wsPort?: number;
   out?: string;
   namespace?: string;
-  agenticros?: boolean;
+  synapse?: boolean;
   corebrum?: boolean;
   bridge?: boolean;
   rmwZenoh?: boolean;
-  arc?: boolean;
+  cloud?: boolean;
   yes?: boolean;
 }
 
 export interface InitPlan {
   input: GenerateInput;
   outDir: string;
-  useArc: boolean;
+  useCloud: boolean;
   warnings: string[];
 }
 
@@ -84,7 +84,7 @@ function stdinIsTty(): boolean {
 
 export interface WizardContext {
   localFleet: FleetIdentity | null;
-  arcFleet: ArcZenohFleet | null;
+  cloudFleet: CloudZenohFleet | null;
   token?: string;
   lanIp: string | null;
 }
@@ -93,7 +93,7 @@ export async function gatherContext(
   flags: InitFlags,
   opts?: { fetchImpl?: typeof fetch; token?: string | undefined },
 ): Promise<WizardContext> {
-  const token = opts && "token" in opts ? opts.token : getArcApiToken();
+  const token = opts && "token" in opts ? opts.token : getCloudApiToken();
   let localFleet: FleetIdentity | null = null;
   if (flags.join) {
     localFleet = loadFleetJson(flags.join);
@@ -102,18 +102,18 @@ export async function gatherContext(
     if (path) localFleet = loadFleetJson(path);
   }
 
-  let arcFleet: ArcZenohFleet | null = null;
+  let cloudFleet: CloudZenohFleet | null = null;
   if (token) {
     try {
-      arcFleet = await pullZenohFleet(token, opts?.fetchImpl);
+      cloudFleet = await pullZenohFleet(token, opts?.fetchImpl);
     } catch {
-      arcFleet = null;
+      cloudFleet = null;
     }
   }
 
   return {
     localFleet,
-    arcFleet,
+    cloudFleet,
     token,
     lanIp: detectLanIpv4(),
   };
@@ -125,7 +125,7 @@ export async function resolveInitPlan(
   interactive: boolean,
 ): Promise<InitPlan> {
   const warnings: string[] = [];
-  const existing = ctx.localFleet ?? ctx.arcFleet;
+  const existing = ctx.localFleet ?? ctx.cloudFleet;
   const defaultName = sanitizeFleetName(
     flags.name || existing?.name || DEFAULT_FLEET_NAME,
   );
@@ -147,7 +147,7 @@ export async function resolveInitPlan(
   }
 
   const integrations: Integrations = {
-    agenticros: flags.agenticros ?? DEFAULT_INTEGRATIONS.agenticros,
+    synapse: flags.synapse ?? DEFAULT_INTEGRATIONS.synapse,
     corebrum: flags.corebrum ?? DEFAULT_INTEGRATIONS.corebrum,
     ros2ddsBridge: flags.bridge ?? DEFAULT_INTEGRATIONS.ros2ddsBridge,
     rmwZenoh: flags.rmwZenoh ?? DEFAULT_INTEGRATIONS.rmwZenoh,
@@ -156,7 +156,7 @@ export async function resolveInitPlan(
   const defaultOut = flags.out ?? `./${defaultName}`;
   let outDir = defaultOut;
   const hasToken = Boolean(ctx.token);
-  let useArc = flags.arc ?? hasToken;
+  let useCloud = flags.cloud ?? hasToken;
 
   if (interactive) {
     name = sanitizeFleetName(
@@ -171,7 +171,7 @@ export async function resolveInitPlan(
       choices: [
         { name: "Hub (router) — this Corebrum OS machine keeps rmw_zenohd", value: "hub" as const },
         {
-          name: "Member (client) — robot, Corebrum, or AgenticROS laptop",
+          name: "Member (client) — robot, Corebrum, or Corebrum Synapse laptop",
           value: "member" as const,
         },
       ],
@@ -198,7 +198,7 @@ export async function resolveInitPlan(
     );
     wsPort = Number(
       await promptInput({
-        message: "WebSocket port (AgenticROS zenoh-ts)",
+        message: "WebSocket port (Corebrum Synapse zenoh-ts)",
         default: String(wsPort),
       }),
     );
@@ -218,13 +218,13 @@ export async function resolveInitPlan(
     const selected = await checkbox({
       message: "Integrations",
       choices: [
-        { name: "AgenticROS (WebSocket remote-api)", value: "agenticros", checked: integrations.agenticros },
+        { name: "Corebrum Synapse (WebSocket remote-api)", value: "synapse", checked: integrations.synapse },
         { name: "Corebrum", value: "corebrum", checked: integrations.corebrum },
         { name: "ROS 2 DDS bridge (zenoh-bridge-ros2dds)", value: "bridge", checked: integrations.ros2ddsBridge },
         { name: "rmw_zenoh session file", value: "rmw", checked: integrations.rmwZenoh },
       ],
     });
-    integrations.agenticros = selected.includes("agenticros");
+    integrations.synapse = selected.includes("synapse");
     integrations.corebrum = selected.includes("corebrum");
     integrations.ros2ddsBridge = selected.includes("bridge");
     integrations.rmwZenoh = selected.includes("rmw");
@@ -237,12 +237,12 @@ export async function resolveInitPlan(
       default: flags.out ?? `./${name}`,
     });
     if (hasToken) {
-      useArc = await confirm({
-        message: "Share hub endpoints with AgenticROS Cloud (ARC) for other machines?",
-        default: useArc,
+      useCloud = await confirm({
+        message: "Share hub endpoints with Corebrum Cloud for other machines?",
+        default: useCloud,
       });
     } else {
-      useArc = false;
+      useCloud = false;
     }
   }
 
@@ -274,7 +274,7 @@ export async function resolveInitPlan(
     }
     if (hubEndpoints.length === 0) {
       warnings.push(
-        "Private member has no hub endpoint. Run this on the hub first, pass --join fleet.json, --hub-ip, or log in so ARC can supply the hub.",
+        "Private member has no hub endpoint. Run this on the hub first, pass --join fleet.json, --hub-ip, or log in so Corebrum Cloud can supply the hub.",
       );
     }
   }
@@ -303,7 +303,7 @@ export async function resolveInitPlan(
     robotNamespace: namespace.trim(),
   };
 
-  return { input: generated, outDir, useArc: useArc && hasToken, warnings };
+  return { input: generated, outDir, useCloud: useCloud && hasToken, warnings };
 }
 
 export async function runInit(
@@ -330,8 +330,8 @@ export async function runInit(
   process.stdout.write(`Wrote ${Object.keys(files).length} files to ${plan.outDir}\n\n`);
   printDeploy(plan.input, plan.outDir);
 
-  if (plan.useArc && ctx.token && plan.input.role === "hub") {
-    const record: ArcZenohFleet = {
+  if (plan.useCloud && ctx.token && plan.input.role === "hub") {
+    const record: CloudZenohFleet = {
       name: plan.input.identity.name,
       isolation: plan.input.identity.isolation,
       tcpPort: plan.input.identity.tcpPort,
@@ -339,20 +339,20 @@ export async function runInit(
       hubEndpoints: plan.input.identity.hubEndpoints,
       wsEndpoint: plan.input.identity.wsEndpoint,
       updatedAt: new Date().toISOString(),
-      hubRobotId: getArcRobotId() ?? null,
+      hubRobotId: getCloudRobotId() ?? null,
     };
     try {
       const result = await publishZenohFleet(ctx.token, record, opts?.fetchImpl);
       if (result.ok) {
         process.stdout.write(
-          "\nPublished hub endpoints to ARC. Other machines: `npx zenoh-fleet` while logged in (`agenticros login`).\n",
+          "\nPublished hub endpoints to Corebrum Cloud. Other machines: `npx zenoh-fleet` while logged in (`synapse login`).\n",
         );
       } else {
         process.stderr.write(`warning: ${result.detail}\n`);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      process.stderr.write(`warning: ARC publish failed; continuing offline (${message}).\n`);
+      process.stderr.write(`warning: Corebrum Cloud publish failed; continuing offline (${message}).\n`);
     }
   }
 

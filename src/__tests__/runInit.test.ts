@@ -7,7 +7,7 @@ import { describe, it } from "node:test";
 import { runInit } from "../wizard.js";
 
 describe("runInit --yes", () => {
-  it("writes hub files without calling ARC", async () => {
+  it("writes hub files without calling Corebrum Cloud", async () => {
     const out = mkdtempSync(join(tmpdir(), "zenoh-fleet-out-"));
     const plan = await runInit(
       {
@@ -16,7 +16,7 @@ describe("runInit --yes", () => {
         name: "lab",
         hubIp: "192.168.10.4",
         out,
-        arc: false,
+        cloud: false,
       },
       { token: undefined },
     );
@@ -37,7 +37,7 @@ describe("runInit --yes", () => {
         listenEndpoint: "tcp/0.0.0.0:7447",
         robotNamespace: "",
         integrations: {
-          agenticros: true,
+          synapse: true,
           corebrum: true,
           ros2ddsBridge: true,
           rmwZenoh: false,

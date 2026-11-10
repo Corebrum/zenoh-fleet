@@ -10,7 +10,7 @@ ${indent}},`;
 
 export function renderZenohd(input: GenerateInput): string {
   const isolationPublic = input.identity.isolation === "public";
-  const remoteApi = input.integrations.agenticros
+  const remoteApi = input.integrations.synapse
     ? `
   plugins_loading: {
     enabled: true,

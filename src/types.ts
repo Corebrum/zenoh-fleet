@@ -2,7 +2,7 @@ export type Role = "hub" | "member";
 export type Isolation = "public" | "private";
 
 export interface Integrations {
-  agenticros: boolean;
+  synapse: boolean;
   corebrum: boolean;
   ros2ddsBridge: boolean;
   rmwZenoh: boolean;
@@ -27,7 +27,7 @@ export interface GenerateInput {
   robotNamespace: string;
 }
 
-export interface ArcZenohFleet {
+export interface CloudZenohFleet {
   name: string;
   isolation: Isolation;
   tcpPort: number;
@@ -43,7 +43,7 @@ export const DEFAULT_TCP_PORT = 7447;
 export const DEFAULT_WS_PORT = 10000;
 
 export const DEFAULT_INTEGRATIONS: Integrations = {
-  agenticros: false,
+  synapse: false,
   corebrum: true,
   ros2ddsBridge: false,
   rmwZenoh: true,

@@ -84,9 +84,9 @@ export function renderDeployReadme(input: GenerateInput): string {
       );
       lines.push("");
     }
-    if (input.integrations.agenticros) {
+    if (input.integrations.synapse) {
       lines.push(
-        "Install `zenoh-plugin-remote-api` so AgenticROS can connect over WebSocket (not TCP).",
+        "Install `zenoh-plugin-remote-api` so Corebrum Synapse can connect over WebSocket (not TCP).",
       );
       lines.push("");
       lines.push("```bash");
@@ -97,7 +97,7 @@ export function renderDeployReadme(input: GenerateInput): string {
     }
     if (host) {
       lines.push(`Advertised TCP: \`tcp/${host}:${tcp}\``);
-      if (input.integrations.agenticros) {
+      if (input.integrations.synapse) {
         lines.push(`Advertised WebSocket: \`ws://${host}:${ws}\``);
       }
       lines.push("");
@@ -130,16 +130,16 @@ export function renderDeployReadme(input: GenerateInput): string {
         lines.push("");
       }
     }
-    if (input.integrations.agenticros) {
+    if (input.integrations.synapse) {
       const wsEp = input.identity.wsEndpoint ?? (host ? `ws://${host}:${ws}` : "ws://<hub-ip>:10000");
-      lines.push("### AgenticROS");
+      lines.push("### Corebrum Synapse");
       lines.push("");
       lines.push(
         `Set **Zenoh Router Endpoint** to \`${wsEp}\` (WebSocket, never \`tcp/...\`).`,
       );
       lines.push("");
       lines.push("```bash");
-      lines.push(`./scripts/configure_agenticros.sh --mode zenoh --zenoh-endpoint ${wsEp}`);
+      lines.push(`./scripts/configure_synapse.sh --mode zenoh --zenoh-endpoint ${wsEp}`);
       lines.push("```");
       lines.push("");
     }
@@ -164,7 +164,7 @@ export function renderDeployReadme(input: GenerateInput): string {
     lines.push("## Private mesh");
     lines.push("");
     lines.push(
-      "Multicast scouting is off. If the hub IP is unreachable from this machine, the node will not join. Cross-site setups need a VPN (e.g. Tailscale) or a public hub — ARC only distributes the address the hub claimed.",
+      "Multicast scouting is off. If the hub IP is unreachable from this machine, the node will not join. Cross-site setups need a VPN (e.g. Tailscale) or a public hub — Corebrum Cloud only distributes the address the hub claimed.",
     );
     lines.push("");
   }
@@ -184,7 +184,7 @@ export function renderDeployReadme(input: GenerateInput): string {
   lines.push("```");
   lines.push("");
   lines.push(
-    "If the hub published to AgenticROS Cloud (ARC): log in (`agenticros login`) on the other machine, then run `npx zenoh-fleet` and accept the defaults.",
+    "If the hub published to Corebrum Cloud: log in (`synapse login`) on the other machine, then run `npx zenoh-fleet` and accept the defaults.",
   );
   lines.push("");
 

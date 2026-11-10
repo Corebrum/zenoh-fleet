@@ -72,13 +72,21 @@ function readConfigstoreRobotId(name: string): string | undefined {
   }
 }
 
-/** Same token `agenticros login` stores (configstore `agenticros`, legacy `robotics`). */
-export function getArcApiToken(): string | undefined {
-  return readConfigstoreToken("agenticros") ?? readConfigstoreToken("robotics");
+/** Same token `synapse login` stores (configstore `synapse`; legacy `agenticros`, `robotics`). */
+export function getCloudApiToken(): string | undefined {
+  return (
+    readConfigstoreToken("synapse") ??
+    readConfigstoreToken("agenticros") ??
+    readConfigstoreToken("robotics")
+  );
 }
 
-export function getArcRobotId(): string | undefined {
-  return readConfigstoreRobotId("agenticros") ?? readConfigstoreRobotId("robotics");
+export function getCloudRobotId(): string | undefined {
+  return (
+    readConfigstoreRobotId("synapse") ??
+    readConfigstoreRobotId("agenticros") ??
+    readConfigstoreRobotId("robotics")
+  );
 }
 
 export function zenohTcpEndpoint(host: string, port: number): string {

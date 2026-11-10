@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { pullZenohFleet, publishZenohFleet } from "../arc.js";
+import { pullZenohFleet, publishZenohFleet } from "../cloud.js";
 
-describe("ARC client", () => {
+describe("Corebrum Cloud client", () => {
   it("GET returns null on 404/401 without throwing", async () => {
     const fetch404: typeof fetch = async () =>
       new Response(null, { status: 404 });
@@ -13,7 +13,7 @@ describe("ARC client", () => {
     assert.equal(await pullZenohFleet("tok", fetch401), null);
   });
 
-  it("GET returns a fleet record when ARC is up", async () => {
+  it("GET returns a fleet record when Corebrum Cloud is up", async () => {
     const body = {
       name: "warehouse-01",
       isolation: "public",
@@ -55,9 +55,9 @@ describe("ARC client", () => {
   });
 
   it("explains a live-cloud 404 instead of blaming the token", async () => {
-    const { formatArcPublishFailure } = await import("../arc.js");
+    const { formatCloudPublishFailure } = await import("../cloud.js");
     assert.match(
-      formatArcPublishFailure(404, "Cannot PUT /orgs/current/zenoh-fleet"),
+      formatCloudPublishFailure(404, "Cannot PUT /orgs/current/zenoh-fleet"),
       /does not expose PUT/,
     );
   });
